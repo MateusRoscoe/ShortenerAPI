@@ -27,6 +27,18 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    // build our application routes
+    let app = app().await;
+
+    // run our app with hyper, listening globally on port 3000
+    let listener: tokio::net::TcpListener =
+        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
+}
+
+async fn app() -> Router {
     let database_config = DatabaseConfig::new();
     let mut client_options = ClientOptions::parse(database_config.uri).await.unwrap();
     client_options.connect_timeout = database_config.connection_timeout;
@@ -38,8 +50,6 @@ async fn main() {
 
     // Synchronize the counter with the database
     handlers::code_handler::start_counter(database.clone()).await;
-
-    // build our application routes
     let app = Router::new()
         .route(
             "/code",
@@ -51,10 +61,5 @@ async fn main() {
         .layer(TimeoutLayer::new(Duration::from_secs(30)))
         .with_state(database);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener: tokio::net::TcpListener =
-        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app.into_make_service())
-        .await
-        .unwrap();
+    return app;
 }
