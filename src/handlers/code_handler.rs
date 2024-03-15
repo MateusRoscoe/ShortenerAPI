@@ -7,6 +7,21 @@ use axum::{http::StatusCode, response::IntoResponse, Json};
 use mongodb::bson::doc;
 use mongodb::{Collection, Database};
 use serde::Deserialize;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static COLLECTION: &str = "codes";
+static COUNTER: AtomicU64 = AtomicU64::new(0);
+
+pub async fn start_counter(database: Database) {
+    let coll: Collection<DataDocument> = database.collection(COLLECTION);
+    let doc_count = coll
+        .count_documents(None, None)
+        .await
+        .expect("Error counting documents");
+
+    COUNTER.store(doc_count + 1, Ordering::SeqCst);
+    println!("Counter initialized to {}", COUNTER.load(Ordering::SeqCst));
+}
 
 #[derive(Deserialize)]
 pub struct GetByCode {
@@ -40,7 +55,7 @@ pub async fn get_data_by_code(
         return HandlerResponse::Status(StatusCode::BAD_REQUEST);
     }
 
-    let coll: Collection<DataDocument> = database.collection("codes");
+    let coll: Collection<DataDocument> = database.collection(COLLECTION);
 
     let result = coll
         .find_one(
@@ -65,10 +80,9 @@ pub async fn generate_code(
     State(database): State<Database>,
     Json(payload): Json<GenerateCode>,
 ) -> HandlerResponse {
-    let coll: Collection<DataDocument> = database.collection("codes");
+    let coll: Collection<DataDocument> = database.collection(COLLECTION);
 
-    let counter: u64 = coll.count_documents(None, None).await.unwrap();
-
+    let counter = COUNTER.fetch_add(1, Ordering::SeqCst);
     let code: String = to_base62(counter);
 
     let data: DataDocument = DataDocument {
