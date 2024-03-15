@@ -15,7 +15,7 @@ static COUNTER: AtomicU64 = AtomicU64::new(0);
 // This way we will be able to run a single instance of the API and not have collisions even if it restarts.
 // ! We can still have collisions if we run multiple instances of the API.
 // ! To fix this we would need to use a distributed synchronization mechanism like Zookeeper to assign ranges.
-pub async fn start_counter(database: Database) {
+pub async fn start_counter(database: Database) -> u64 {
     let coll: Collection<DataDocument> = database.collection(COLLECTION);
     let doc_count = coll
         .count_documents(None, None)
@@ -23,7 +23,10 @@ pub async fn start_counter(database: Database) {
         .expect("Error counting documents");
 
     COUNTER.store(doc_count + 1, Ordering::SeqCst);
-    println!("Counter initialized to {}", COUNTER.load(Ordering::SeqCst));
+    let loaded_to = COUNTER.load(Ordering::SeqCst);
+    println!("Counter initialized to {}", loaded_to);
+
+    return loaded_to;
 }
 
 #[derive(Deserialize)]
