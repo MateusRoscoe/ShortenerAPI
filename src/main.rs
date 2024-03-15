@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 
-use std::time::Duration;
+use std::{env, time::Duration};
 
 use axum::{extract::DefaultBodyLimit, routing::get, Router};
 use dotenv::dotenv;
@@ -32,6 +32,8 @@ async fn main() {
     client_options.max_pool_size = database_config.max_pool_size;
     client_options.min_pool_size = database_config.min_pool_size;
     let client = Client::with_options(client_options).unwrap();
+    let database_name = std::env::var("MONGO_DATABASE").expect("MONGO_DATABASE must be set");
+    let database = client.database(&database_name);
 
     // build our application routes
     let app = Router::new()
@@ -43,7 +45,7 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .layer(DefaultBodyLimit::max(1024))
         .layer(TimeoutLayer::new(Duration::from_secs(30)))
-        .with_state(client);
+        .with_state(database);
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

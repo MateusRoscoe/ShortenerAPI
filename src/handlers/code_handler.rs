@@ -4,7 +4,7 @@ use axum::extract::State;
 use axum::http::Response;
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use mongodb::bson::doc;
-use mongodb::{Client, Collection};
+use mongodb::{Collection, Database};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -32,14 +32,14 @@ impl IntoResponse for HandlerResponse {
 }
 
 pub async fn get_data_by_code(
-    State(client): State<Client>,
+    State(database): State<Database>,
     Json(payload): Json<GetByCode>,
 ) -> HandlerResponse {
     if payload.code.len() != 7 {
         return HandlerResponse::Status(StatusCode::BAD_REQUEST);
     }
 
-    let coll: Collection<DataDocument> = client.database("short_url").collection("codes");
+    let coll: Collection<DataDocument> = database.collection("codes");
 
     let result = coll
         .find_one(
@@ -61,10 +61,10 @@ pub async fn get_data_by_code(
 }
 
 pub async fn generate_code(
-    State(client): State<Client>,
+    State(database): State<Database>,
     Json(payload): Json<GenerateCode>,
 ) -> HandlerResponse {
-    let coll: Collection<DataDocument> = client.database("short_url").collection("codes");
+    let coll: Collection<DataDocument> = database.collection("codes");
 
     let code: &str = "1234567";
 
