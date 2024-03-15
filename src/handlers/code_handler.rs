@@ -1,3 +1,4 @@
+use crate::helpers::common::to_base62;
 use crate::structs::data_document::DataDocument;
 use axum::body::Body;
 use axum::extract::State;
@@ -66,7 +67,9 @@ pub async fn generate_code(
 ) -> HandlerResponse {
     let coll: Collection<DataDocument> = database.collection("codes");
 
-    let code: &str = "1234567";
+    let counter: u64 = coll.count_documents(None, None).await.unwrap();
+
+    let code: String = to_base62(counter);
 
     let data: DataDocument = DataDocument {
         code: code.to_string(),

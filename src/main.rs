@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 
-use std::{env, time::Duration};
+use std::time::Duration;
 
 use axum::{extract::DefaultBodyLimit, routing::get, Router};
 use dotenv::dotenv;
@@ -10,6 +10,7 @@ use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod handlers;
+mod helpers;
 mod structs;
 
 #[tokio::main]
@@ -48,7 +49,8 @@ async fn main() {
         .with_state(database);
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener: tokio::net::TcpListener =
+        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
