@@ -12,6 +12,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static COLLECTION: &str = "codes";
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
+// This way we will be able to run a single instance of the API and not have collisions even if it restarts.
+// ! We can still have collisions if we run multiple instances of the API.
+// ! To fix this we would need to use a distributed synchronization mechanism like Zookeeper to assign ranges.
 pub async fn start_counter(database: Database) {
     let coll: Collection<DataDocument> = database.collection(COLLECTION);
     let doc_count = coll
