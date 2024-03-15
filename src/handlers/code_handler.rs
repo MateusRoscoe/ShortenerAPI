@@ -6,7 +6,6 @@ use axum::{http::StatusCode, response::IntoResponse, Json};
 use mongodb::bson::doc;
 use mongodb::{Client, Collection};
 use serde::Deserialize;
-use tracing_subscriber::registry::Data;
 
 #[derive(Deserialize)]
 pub struct GetByCode {
@@ -53,11 +52,11 @@ pub async fn get_data_by_code(
 
     if let Err(e) = result {
         tracing::error!("Error: {}", e);
-        return HandlerResponse::Status(StatusCode::INTERNAL_SERVER_ERROR);
+        HandlerResponse::Status(StatusCode::INTERNAL_SERVER_ERROR)
     } else if let Ok(Some(doc)) = result {
-        return HandlerResponse::DataDocument((StatusCode::OK, Json(doc)));
+        HandlerResponse::DataDocument((StatusCode::OK, Json(doc)))
     } else {
-        return HandlerResponse::Status(StatusCode::NOT_FOUND);
+        HandlerResponse::Status(StatusCode::NOT_FOUND)
     }
 }
 
@@ -81,8 +80,8 @@ pub async fn generate_code(
 
     if let Err(e) = result {
         tracing::error!("Error: {}", e);
-        return HandlerResponse::Status(StatusCode::INTERNAL_SERVER_ERROR);
-    } else if let Ok(_) = result {
+        HandlerResponse::Status(StatusCode::INTERNAL_SERVER_ERROR)
+    } else if result.is_ok() {
         return HandlerResponse::DataDocument((StatusCode::OK, Json(data)));
     } else {
         tracing::error!("Error inserting document into database.");
