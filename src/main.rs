@@ -37,8 +37,6 @@ async fn app() -> Router {
     let database_name = std::env::var("MONGO_DATABASE").expect("MONGO_DATABASE must be set");
     let database = client.database(&database_name);
 
-    // Synchronize the counter with the database
-    handlers::code_handler::start_counter(database.clone()).await;
     let app = Router::new()
         .route(
             "/code",
