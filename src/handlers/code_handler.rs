@@ -11,7 +11,7 @@ use serde::Deserialize;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static COLLECTION: &str = "codes";
-static COUNTER: AtomicU64 = AtomicU64::new(0);
+static COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Deserialize)]
 pub struct GetByCode {
