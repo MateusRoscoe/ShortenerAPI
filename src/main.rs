@@ -7,7 +7,6 @@ use dotenv::dotenv;
 use mongodb::{options::ClientOptions, Client};
 use structs::common::DatabaseConfig;
 use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod handlers;
 mod helpers;
@@ -15,17 +14,7 @@ mod structs;
 
 #[tokio::main]
 async fn main() {
-    // initialize tracing
     dotenv().ok();
-
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| {
-                "rust_axum=debug,axum=debug,tower_http=debug,mongodb=debug".into()
-            }),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
 
     // build our application routes
     let app = app().await;

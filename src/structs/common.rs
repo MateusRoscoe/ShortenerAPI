@@ -9,8 +9,8 @@ pub struct DatabaseConfig {
 
 impl DatabaseConfig {
     pub fn new() -> Self {
-        let mongo_uri: String = std::env::var("MONGO_URI")
-            .expect("Failed to load `MONGO_MAX_POOL_SIZE` environment variable.");
+        let mongo_uri: String =
+            std::env::var("MONGO_URI").expect("Failed to load `MONGO_URI` environment variable.");
 
         let mongo_connection_timeout: u64 = std::env::var("MONGO_CONNECTION_TIMEOUT")
             .expect("Failed to load `MONGO_CONNECTION_TIMEOUT` environment variable.")
