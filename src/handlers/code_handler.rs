@@ -1,6 +1,7 @@
 use crate::helpers::common::to_base62;
 use crate::structs::data_document::DataDocument;
 use axum::body::Body;
+use axum::extract::Query;
 use axum::extract::State;
 use axum::http::Response;
 use axum::{http::StatusCode, response::IntoResponse, Json};
@@ -10,7 +11,7 @@ use serde::Deserialize;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static COLLECTION: &str = "codes";
-static COUNTER: AtomicU64 = AtomicU64::new(238328);
+static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Deserialize)]
 pub struct GetByCode {
@@ -38,12 +39,8 @@ impl IntoResponse for HandlerResponse {
 
 pub async fn get_data_by_code(
     State(database): State<Database>,
-    Json(payload): Json<GetByCode>,
+    Query(payload): Query<GetByCode>,
 ) -> HandlerResponse {
-    if payload.code.len() != 7 {
-        return HandlerResponse::Status(StatusCode::BAD_REQUEST);
-    }
-
     let coll: Collection<DataDocument> = database.collection(COLLECTION);
 
     let result = coll
@@ -78,7 +75,6 @@ pub async fn generate_code(
         code: code.to_string(),
         data: payload.data,
         created_at: chrono::Utc::now(),
-        updated_at: None,
     };
 
     let result: Result<mongodb::results::InsertOneResult, mongodb::error::Error> =

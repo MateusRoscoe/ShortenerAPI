@@ -6,5 +6,4 @@ pub struct DataDocument {
     pub data: String,
     pub code: String,
     pub created_at: DateTime<Utc>,
-    pub updated_at: Option<DateTime<Utc>>,
 }
